@@ -41,6 +41,7 @@ Each practical is geared to run concurrently with what is taught in class
 | **3**         | **Part A** sets up the STM32F4 and tests a simple blinking LED on/off routine. **Part B** builds on Practical 1 Part B by porting the Mandelbrot‑set renderer to the STM32F4.                                                                    | Module 3   |
 | **4**         | Build and test a simple DAC on the STM32 (using PWM or an external resistor ladder). Students learn digital‑to‑analog conversion fundamentals in hardware.                                                                                       | Module 4   |
 <<<<<<< HEAD
+<<<<<<< HEAD
 | **5**         | Configure and use the ADC on the STM32 to sample analog signals (e.g., a temperature sensor). Students capture, process, and display conversion results.                                                                                         | Module 4   |
 =======
 # EEE3096S-2025
@@ -49,3 +50,6 @@ Repository to hold the practicals for Embedded Systems 2 course offered at the U
 =======
 | **5**         | Configure and use the ADC on the STM32 to sample analog signals (e.g., a temperature sensor). Students capture, process, and display conversion results.                                                                                         | Module 5   |
 >>>>>>> ab3183e (Added Prac1 Files)
+=======
+| **5**         | Configure and use the ADC on the STM32 to sample analog signals (e.g., a temperature sensor). Students capture, process, and display conversion results.                                                                                         | Module 4   |
+>>>>>>> 3c8725c (Update README.md)
