@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ab3183e (Added Prac1 Files)
 <div align="center">
   <img src="./assets/UCT_Logo.png" width="25%" alt="UCT Logo">
   <br><br>
@@ -37,8 +40,12 @@ Each practical is geared to run concurrently with what is taught in class
 | **2**         | Introduction to ARM assembly on an embedded platform. Students write simple routines to appreciate the abstraction provided by higher‑level languages (C/Python).                                                                                | Module 2   |
 | **3**         | **Part A** sets up the STM32F4 and tests a simple blinking LED on/off routine. **Part B** builds on Practical 1 Part B by porting the Mandelbrot‑set renderer to the STM32F4.                                                                    | Module 3   |
 | **4**         | Build and test a simple DAC on the STM32 (using PWM or an external resistor ladder). Students learn digital‑to‑analog conversion fundamentals in hardware.                                                                                       | Module 4   |
+<<<<<<< HEAD
 | **5**         | Configure and use the ADC on the STM32 to sample analog signals (e.g., a temperature sensor). Students capture, process, and display conversion results.                                                                                         | Module 4   |
 =======
 # EEE3096S-2025
 Repository to hold the practicals for Embedded Systems 2 course offered at the University of Cape Town(UCT).
 >>>>>>> 038915e (Initial commit)
+=======
+| **5**         | Configure and use the ADC on the STM32 to sample analog signals (e.g., a temperature sensor). Students capture, process, and display conversion results.                                                                                         | Module 5   |
+>>>>>>> ab3183e (Added Prac1 Files)
