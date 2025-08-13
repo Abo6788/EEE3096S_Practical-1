@@ -56,11 +56,20 @@ volatile uint8_t bf2Arr[] = {
     0b10111111,
     0b01111111,
     0b10111111,
-    0b11011111
+    0b11011111,
+	0b11101111,
+	0b11110111,
+	0b11111011,
+	0b11111101,
 };
 volatile uint8_t Mode = 1;
 volatile uint8_t Index = 0;
 volatile uint8_t delayMode = 0;
+volatile uint8_t sparklePattern = 0;
+volatile uint8_t sparkleStep = 0;
+volatile uint16_t sparkleTimer = 0;
+volatile uint8_t prevState = 1; // Assume button released initially
+
 
 /* USER CODE END PV */
 
@@ -122,15 +131,26 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     // TODO: Check pushbuttons to change timer delay
-	  if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_0) == 0) // Active low
+	  uint8_t currState = LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_0); // 1 = released, 0 = pressed
+
+	  // Detect press event (falling edge)
+	  if (prevState == 1 && currState == 0)
 	  {
-		  delayMode ^= 1; // Toggle between 0 and 1
+		  delayMode ^= 1; // Toggle delay mode
+
 		  if (delayMode == 0)
-			  __HAL_TIM_SET_AUTORELOAD(&htim16, 9999);  // Example: ARR for 1 sec
+		  {
+			  __HAL_TIM_SET_AUTORELOAD(&htim16, 9999); // ARR for 1 sec
+		  }
 		  else
-			  __HAL_TIM_SET_AUTORELOAD(&htim16, 4999);  // Example: ARR for 0.5 sec
+		  {
+			  __HAL_TIM_SET_AUTORELOAD(&htim16, 4999); // ARR for 0.5 sec
+		  }
+
+		  HAL_Delay(50); // Simple debounce (50ms)
 	  }
 
+	  prevState = currState;
 
     
 
@@ -345,7 +365,6 @@ void TIM16_IRQHandler(void)
 	HAL_TIM_IRQHandler(&htim16);
 
 	// TODO: Change LED pattern
-	HAL_TIM_IRQHandler(&htim16); // acknowledge interrupt
 
 	    // --- Mode selection ---
 	if (LL_GPIO_IsInputPinSet(Button1_GPIO_Port, Button1_Pin) == 0) // Active low
@@ -361,7 +380,7 @@ void TIM16_IRQHandler(void)
 	else if (LL_GPIO_IsInputPinSet(Button3_GPIO_Port, Button3_Pin) == 0)
 	{
 		Mode = 3;
-		Index = 0;
+		sparkleStep = 0;
 	}
 
 	uint8_t pattern = 0;
@@ -373,6 +392,39 @@ void TIM16_IRQHandler(void)
 			pattern = bf2Arr[Index];
 			break;
 		case 3:
+			switch(sparkleStep)
+			{
+				case 0: // pick random pattern & hold time
+					sparklePattern = rand() % 256;
+					pattern = sparklePattern;
+					sparkleTimer = (100 + rand() % 1400) / 100; // convert to ticks
+					sparkleStep = 1;
+					break;
+
+				case 1: // hold
+					pattern = sparklePattern;
+					if (--sparkleTimer == 0) {
+						sparkleStep = 2;
+						sparkleTimer = 0;
+					}
+					break;
+
+				case 2: // turn off LEDs one by one
+					if (sparklePattern != 0) {
+						// turn off one random ON LED
+						uint8_t mask = 1 << (rand() % 8);
+						while (!(sparklePattern & mask)) {
+							mask = 1 << (rand() % 8);
+						}
+						sparklePattern &= ~mask;
+						pattern = sparklePattern;
+						sparkleTimer = 1; // ~100ms in tick units if your timer matches that
+					}
+					else {
+						sparkleStep = 0; // restart sparkle
+					}
+					break;
+			}
 
 	}
 	LL_GPIO_WriteOutputPort(GPIOB, (LL_GPIO_ReadOutputPort(GPIOB) & 0xFF00) | pattern);
