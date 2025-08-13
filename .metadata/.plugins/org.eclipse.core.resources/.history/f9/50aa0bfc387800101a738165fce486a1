@@ -140,11 +140,11 @@ int main(void)
 
 		  if (delayMode == 0)
 		  {
-			  __HAL_TIM_SET_AUTORELOAD(&htim16, 999); // ARR for 1 sec
+			  __HAL_TIM_SET_AUTORELOAD(&htim16, 9999); // ARR for 1 sec
 		  }
 		  else
 		  {
-			  __HAL_TIM_SET_AUTORELOAD(&htim16, 499); // ARR for 0.5 sec
+			  __HAL_TIM_SET_AUTORELOAD(&htim16, 4999); // ARR for 0.5 sec
 		  }
 
 		  HAL_Delay(50); // Simple debounce (50ms)
