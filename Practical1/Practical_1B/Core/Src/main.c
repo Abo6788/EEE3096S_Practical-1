@@ -66,7 +66,11 @@ uint64_t calculate_mandelbrot_double(int width, int height, int max_iterations);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+static const int image_dimensions[] = {128,160,192,224,256};
+volatile uint64_t globalCheckSum = 0;
+volatile uint32_t globalStartTime = 0;
+volatile uint32_t globalEndTime = 0;
+volatile uint32_t executionTime = 0;
 /* USER CODE END 0 */
 
 /**
@@ -131,6 +135,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+
   }
   /* USER CODE END 3 */
 }
@@ -202,11 +208,28 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 //TODO: Mandelbroat using variable type integers and fixed point arithmetic
 uint64_t calculate_mandelbrot_fixed_point_arithmetic(int width, int height, int max_iterations){
-  uint64_t mandelbrot_sum = 0;
+	uint64_t mandelbrot_sum = 0;
     //TODO: Complete the function implementation
     
-    return mandelbrot_sum;
+    for(int y = 0; y < height; y++){
+    	for(int x = 0; x < width; x++){
+    		long x0 = ((long)x / width) * 3.5 - 2.5;
+    		long y0 = ((long)y / height) * 2.0 -1.0;
 
+    		long xi = 0;
+    		long yi = 0;
+    		int iteration = 0;
+
+    		while (iteration < max_iterations && xi*xi + yi*yi <= 4){
+    			long temp =  xi*xi - yi*yi;
+    			yi = 2*xi*yi+y0;
+    			xi = temp + x0;
+    			iteration++;
+    		}
+    		mandelbrot_sum += iteration;
+    	}
+    }
+    return mandelbrot_sum;
 }
 
 //TODO: Mandelbroat using variable type double
