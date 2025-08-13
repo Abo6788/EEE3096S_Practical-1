@@ -1,0 +1,6 @@
+21:20:40 **** Incremental Build of configuration Default for project Practical_1A ****
+make all 
+make: Nothing to be done for 'all'.
+
+21:20:41 Build Finished. 0 errors, 0 warnings. (took 512ms)
+
