@@ -124,7 +124,7 @@ int main(void)
   
 
   //TODO: Turn off the LEDs
-  
+
 
   /* USER CODE END 2 */
 
@@ -135,8 +135,30 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  for(int i = 0; i < (sizeof(image_dimensions)/sizeof(image_dimensions[0])); i++){
+	  	  int dim = image_dimensions[i];
 
 
+	  	  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
+	  	  globalStartTime = HAL_GetTick();
+	  	  globalCheckSum = calculate_mandelbrot_fixed_point_arithmetic(image_dimensions[i], image_dimensions[i],MAX_ITER);
+	  	  globalEndTime = HAL_GetTick();
+	  	  executionTime = globalEndTime - globalStartTime;
+	  	  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
+	  	  HAL_Delay(1000);
+	  	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1, GPIO_PIN_RESET);
+
+
+
+	  	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); // Turn on LED 1 for double test
+		  globalStartTime = HAL_GetTick();
+		  globalCheckSum = calculate_mandelbrot_double(dim, dim, MAX_ITER);
+		  globalEndTime = HAL_GetTick();
+		  executionTime = globalEndTime - globalStartTime;
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); // Turn off LED 1
+		  HAL_Delay(1000); // Pause for 1s
+
+	    }
   }
   /* USER CODE END 3 */
 }
@@ -208,54 +230,84 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 //TODO: Mandelbroat using variable type integers and fixed point arithmetic
 uint64_t calculate_mandelbrot_fixed_point_arithmetic(int width, int height, int max_iterations){
-	uint64_t mandelbrot_sum = 0;
-    //TODO: Complete the function implementation
-    
-    for(int y = 0; y < height; y++){
-    	for(int x = 0; x < width; x++){
-    		long x0 = ((long)x / width) * 3.5 - 2.5;
-    		long y0 = ((long)y / height) * 2.0 -1.0;
+	uint64_t sum = 0;
 
-    		long xi = 0;
-    		long yi = 0;
-    		int iteration = 0;
+	    int FRACT = 29;                                // number of fractional bits
+	    long long scale_factor = (1LL << FRACT);       // fixed-point scaling factor
+	    long long FOUR = (4LL << FRACT);               // 4.0 in fixed-point
 
-    		while (iteration < max_iterations && xi*xi + yi*yi <= 4){
-    			long temp =  xi*xi - yi*yi;
-    			yi = 2*xi*yi+y0;
-    			xi = temp + x0;
-    			iteration++;
-    		}
-    		mandelbrot_sum += iteration;
-    	}
-    }
-    return mandelbrot_sum;
+	    // ranges in fixed-point
+	    long long x_min   = -((5LL * scale_factor) >> 1);   // -2.5
+	    long long x_range = (7LL * scale_factor) >> 1;      // 3.5
+	    long long y_min   = -(1LL * scale_factor);          // -1.0
+	    long long y_range =  (2LL * scale_factor);          // 2.0
+
+	    // step sizes (still one division here, but only once per dimension, not per pixel)
+	    long long step_x = x_range / width;
+	    long long step_y = y_range / height;
+
+	    for (int y = 0; y < height; y++) {
+	        long long y0 = y_min + (long long)y * step_y;
+
+	        long long x0 = x_min;
+	        for (int x = 0; x < width; x++) {
+	            long long xi = 0, yi = 0;
+	            long long xi2 = 0, yi2 = 0;
+	            int iter = 0;
+
+	            while (iter < max_iterations && (xi2 + yi2) <= FOUR) {
+	                long long temp = ((xi * xi) >> FRACT) - ((yi * yi) >> FRACT) + x0;
+	                yi = ((2LL * xi * yi) >> FRACT) + y0;
+	                xi = temp;
+
+	                xi2 = (xi * xi) >> FRACT;
+	                yi2 = (yi * yi) >> FRACT;
+
+	                iter++;
+	            }
+
+	            sum += (uint64_t)iter;
+	            x0 += step_x;
+	        }
+	    }
+
+	    return sum;
 }
 
 //TODO: Mandelbroat using variable type double
 uint64_t calculate_mandelbrot_double(int width, int height, int max_iterations){
-    uint64_t mandelbrot_sum = 0;
-    //TODO: Complete the function implementation
-    for(int y = 0; y < height; y++){
-        	for(int x = 0; x < width; x++){
-        		double x0 = ((double)x / width) * 3.5 - 2.5;
-        		double y0 = ((double)y / height) * 2.0 -1.0;
+	uint64_t sum = 0;
 
-        		double xi = 0;
-        		double yi = 0;
-        		int iteration = 0;
+	    double x_min   = -2.5;
+	    double x_range =  3.5;
+	    double y_min   = -1.0;
+	    double y_range =  2.0;
 
-        		while (iteration < max_iterations && xi*xi + yi*yi <= 4){
-        			double temp =  xi*xi - yi*yi;
-        			yi = 2*xi*yi+y0;
-        			xi = temp + x0;
-        			iteration++;
-        		}
-        		mandelbrot_sum += iteration;
-        	}
-        }
-    
-    return mandelbrot_sum;
+	    // step sizes (computed once per dimension)
+	    double step_x = x_range / (double)width;
+	    double step_y = y_range / (double)height;
+
+	    for (int y = 0; y < height; y++) {
+	        double y0 = y_min + (double)y * step_y;
+
+	        double x0 = x_min;
+	        for (int x = 0; x < width; x++) {
+	            double xi = 0.0, yi = 0.0;
+	            int iter = 0;
+
+	            while (iter < max_iterations && (xi*xi + yi*yi) <= 4.0) {
+	                double temp = (xi * xi) - (yi * yi) + x0;
+	                yi = (2.0 * xi * yi) + y0;
+	                xi = temp;
+	                iter++;
+	            }
+
+	            sum += (uint64_t)iter;
+	            x0 += step_x;
+	        }
+	    }
+
+	    return sum;
 }
 
 /* USER CODE END 4 */
